@@ -2,17 +2,17 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -Iinclude -Iinclude/components -Wall -Wextra -std=c++11
+CXXFLAGS = -Iinclude -Iinclude/components -Wall -Wextra -std=c++20
 
 # Source files
 SRC = src/main.cpp \
-      src/ApplicationManager.cpp \
-      src/SystemManager.cpp \
-      src/MonitoringPlatform.cpp \
-      src/components/CPUComponent.cpp \
-      src/components/DiskComponent.cpp \
-      src/components/MemoryComponent.cpp \
-      src/components/NetworkComponent.cpp
+      src/application_manager.cpp \
+      src/system_manager.cpp \
+      src/monitoring_platform.cpp \
+      src/components/cpu_component.cpp \
+      src/components/disk_component.cpp \
+      src/components/memory_component.cpp \
+      src/components/network_component.cpp
 
 # Object files
 OBJ = $(SRC:.cpp=.o)
@@ -31,8 +31,16 @@ $(EXEC): $(OBJ)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Build Docker image
+build:
+	docker build -t drp-image .
+
+# Run Docker container in interactive mode and mount current directory to /local
+run: build
+	docker run -it --rm -v $(shell pwd):/local drp-image
+
 # Clean object files and executable
 clean:
-	rm -f $(OBJ) $(EXEC)
+	rm -f $(OBJ) $(EXEC) perf_logs
 
-.PHONY: all clean
+.PHONY: all clean build run

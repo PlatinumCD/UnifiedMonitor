@@ -1,11 +1,17 @@
-#include "MonitoringPlatform.h"
-#include "components/CPUComponent.h"
-#include "components/DiskComponent.h"
-#include "components/MemoryComponent.h"
-#include "components/NetworkComponent.h"
+#include <string>
+#include <chrono>
+#include <thread>
+#include <ctime>
+
+#include "monitoring_platform.h"
+#include "components/cpu_component.h"
+#include "components/disk_component.h"
+#include "components/memory_component.h"
+#include "components/network_component.h"
 
 int main() {
-    MonitoringPlatform platform;
+    std::string log_file_name = "perf_logs";
+    MonitoringPlatform platform(log_file_name);
 
     // System components
     CPUComponent cpu;
@@ -14,21 +20,21 @@ int main() {
     NetworkComponent network;
 
     // Register system components
-    platform.registerSystemComponent(&cpu);
-    platform.registerSystemComponent(&disk);
-    platform.registerSystemComponent(&memory);
-    platform.registerSystemComponent(&network);
+    platform.register_system_component(&cpu);
+    platform.register_system_component(&disk);
+    platform.register_system_component(&memory);
+    platform.register_system_component(&network);
 
-/*
-    // Register application components
-    platform.registerApplicationComponent(&memory);
-    platform.registerApplicationComponent(&network);
-*/
+    int interval = 1;  // Interval in seconds
 
-    // Parse the data
-    platform.parseSystemData();
+    while(1) {
+        platform.parse_system_data();
 
-//    platform.parseApplicationData();
+	platform.print_data();
+
+        // Sleep for the given interval
+        std::this_thread::sleep_for(std::chrono::seconds(interval));
+    }
 
     return 0;
 }
