@@ -3,7 +3,7 @@ from components.base_component import BaseComponent
 from collections import deque
 
 class CPUComponent(BaseComponent):
-    def __init__(self, subcomponents_str=None, interval=1, period=20):
+    def __init__(self, cpu_flags, interval=1, period=20):
         self.interval_update = interval
         self.rolling_period = period  # For example, keep the rolling average for last 60 seconds
         self.rolling_cpu_usages = {}
@@ -12,13 +12,28 @@ class CPUComponent(BaseComponent):
         self.cpu_energy = {}
         self.rolling_cpu_rates = {}
         self.rolling_energy_rates = {}
+
         self.subcomponents = {
             'usage': self.parse_cpu_usage,
             'energy': self.parse_cpu_energy,
             'rolling_usage': self.update_rolling_usage_rates,
             'rolling_energy': self.update_rolling_energy_rates
         }
-        self.subcomponents_to_parse = subcomponents_str.split(',') if subcomponents_str else self.subcomponents.keys()
+
+        # Determine subcomponents to parse based on cpu_flags
+        self.subcomponents_to_parse = []
+        if cpu_flags['cpu_full']:
+            self.subcomponents_to_parse = list(self.subcomponents.keys())
+        else:
+            if cpu_flags['cpu_usage']:
+                self.subcomponents_to_parse.append('usage')
+            if cpu_flags['cpu_energy']:
+                self.subcomponents_to_parse.append('energy')
+            if cpu_flags['cpu_rolling_usage']:
+                self.subcomponents_to_parse.append('rolling_usage')
+            if cpu_flags['cpu_rolling_energy']:
+                self.subcomponents_to_parse.append('rolling_energy')
+
         self.sockets = self.detect_sockets()
 
     def parse_data(self):
@@ -130,3 +145,5 @@ class CPUComponent(BaseComponent):
             for key, value in self.rolling_energy_rates.items():
                 formatted_rate = self.format_rate(value)
                 stream.write(f"  {key}: {formatted_rate} μJ/s\n")
+
+        stream.write("\n")

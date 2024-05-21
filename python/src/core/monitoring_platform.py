@@ -1,8 +1,8 @@
 import os
 import sys
 
-from system_manager import SystemManager
-from application_manager import ApplicationManager
+from core.system_manager import SystemManager
+from core.application_manager import ApplicationManager
 
 class MonitoringPlatform:
     def __init__(self, log_file_name=None):
