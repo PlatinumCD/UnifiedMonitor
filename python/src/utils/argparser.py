@@ -10,8 +10,10 @@ def parse_arguments():
     cpu_group.add_argument('--cpu-full', action='store_true', help='Include all CPU subcomponents')
     cpu_group.add_argument('--cpu-usage', action='store_true', help='Include CPU usage subcomponent')
     cpu_group.add_argument('--cpu-energy', action='store_true', help='Include CPU energy subcomponent')
+    cpu_group.add_argument('--cpu-usage-short', action='store_true', help='Include CPU usage (less details) subcomponent')
     cpu_group.add_argument('--cpu-rolling-usage', action='store_true', help='Include CPU rolling usage subcomponent')
     cpu_group.add_argument('--cpu-rolling-energy', action='store_true', help='Include CPU rolling energy subcomponent')
+    cpu_group.add_argument('--cpu-rolling-usage-short', action='store_true', help='Include CPU rolling usage (less details) subcomponent')
 
     # Memory Flags
     mem_group = parser.add_argument_group('MEMORY')
@@ -37,8 +39,10 @@ def parse_arguments():
         'cpu_full': args.cpu_full,
         'cpu_usage': args.cpu_usage,
         'cpu_energy': args.cpu_energy,
+        'cpu_usage_short': args.cpu_usage_short,
         'cpu_rolling_usage': args.cpu_rolling_usage,
         'cpu_rolling_energy': args.cpu_rolling_energy,
+        'cpu_rolling_usage_short': args.cpu_rolling_usage_short,
     }
 
     mem_flags = {
