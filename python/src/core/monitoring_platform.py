@@ -9,14 +9,18 @@ class MonitoringPlatform:
         self.log_file_name = log_file_name
         self.system_manager = SystemManager()
         self.application_manager = ApplicationManager()
+
         if log_file_name:
-            self.log_file = open(log_file_name, 'w')
+            self.log_file = open(log_file_name, 'w', buffering=1)  # Open once, line-buffered
             self.log_stream = self.log_file
         else:
             self.log_stream = sys.stdout
 
     def __del__(self):
-        if hasattr(self, 'log_file') and self.log_file:
+        self.close_log_file()
+
+    def close_log_file(self):
+        if hasattr(self, 'log_file') and self.log_file and not self.log_file.closed:
             self.log_file.close()
 
     def register_system_component(self, component):
@@ -32,15 +36,9 @@ class MonitoringPlatform:
         self.application_manager.parse_data()
 
     def print_data(self):
-        # Close the old log_file if it exists
-        if hasattr(self, 'log_file') and self.log_file:
-            self.log_file.close()
-
-        # Open the file in write mode with no buffering (buffering=1 for line-buffered which also works)
-        self.log_file = open(self.log_file_name, 'w', buffering=1)
-        self.log_stream = self.log_file
-
+        if self.log_file:
+            self.log_file.seek(0)  # Move cursor to the beginning of the file
+#            self.log_file.truncate()  # Truncate the file (delete all content)
         self.system_manager.print_components(self.log_stream)
-
-        # Ensure the data is written to the file and not just buffered
-        self.log_file.flush()
+        if self.log_file:
+            self.log_file.flush()
