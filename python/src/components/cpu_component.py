@@ -7,7 +7,6 @@ class CPUComponent(BaseComponent):
         self.interval_update = interval
         self.rolling_period = period  # For example, keep the rolling average for last 60 seconds
         self.alpha = 2 / (self.rolling_period + 1)  # for EMA calculation
-        print(self.alpha)
 
         self.rolling_cpu_usages = {}
         self.rolling_cpu_energy = {}
@@ -49,6 +48,8 @@ class CPUComponent(BaseComponent):
                 self.subcomponents_to_parse.append('rolling_usage_short')
 
         self.sockets = self.detect_sockets()
+
+        self.headers_written = False
 
     def parse_data(self):
         for subcomponent in self.subcomponents_to_parse:
@@ -166,7 +167,8 @@ class CPUComponent(BaseComponent):
             return 0
         rate = (values[-1] - values[0]) / (len(values)-1) * (1 / self.interval_update)
         new_ema = ((1-self.alpha) * rate) + ((self.alpha) * prev_ema)
-        return round(new_ema, 5)  # Round to 5 decimal places
+#        return round(new_ema, 5)  # Round to 5 decimal places
+        return round(rate, 5)  # Round to 5 decimal places
 
     def format_rate(self, rate):
         return f"{rate:6.5f}"  # Format to 6 characters wide with 5 decimal places
@@ -215,3 +217,46 @@ class CPUComponent(BaseComponent):
                     stream.write(f"  {key}: {formatted_rate}\n")
 
         stream.write("\n")
+
+    def record_component(self, csv_writer, time):
+        if not self.headers_written:
+            # Create headers based on the subcomponents included
+            headers = ['Time']
+            if 'usage' in self.subcomponents_to_parse:
+                headers.extend([f'{cpu_id}_{key}' for cpu_id, usage in self.cpu_usages.items() for key in usage])
+            if 'energy' in self.subcomponents_to_parse:
+                headers.extend([f'{key}_energy_uj' for key in self.cpu_energy.keys()])
+            if 'usage_short' in self.subcomponents_to_parse:
+                headers.extend([f'{cpu_id}_short_{key}' for cpu_id, usage in self.cpu_usages_short.items() for key in usage])
+            if 'rolling_usage' in self.subcomponents_to_parse:
+                headers.extend([f'{cpu_id}_rolling_{key}' for cpu_id, usage in self.rolling_usage_rates.items() for key in usage])
+            if 'rolling_energy' in self.subcomponents_to_parse:
+                headers.extend([f'{key}_rolling_energy_uj_s' for key in self.rolling_energy_rates.keys()])
+            if 'rolling_usage_short' in self.subcomponents_to_parse:
+                headers.extend([f'{cpu_id}_rolling_short_{key}' for cpu_id, usage in self.rolling_usage_short_rates.items() for key in usage])
+
+            csv_writer.writerow(headers)
+            self.headers_written = True
+
+        # Add data row for current timestep
+        row = [time]
+        if 'usage' in self.subcomponents_to_parse:
+            for cpu_id, usage in self.cpu_usages.items():
+                row.extend([value for key, value in usage.items()])
+        if 'energy' in self.subcomponents_to_parse:
+            for key, value in self.cpu_energy.items():
+                row.append(value['energy_uj'])
+        if 'usage_short' in self.subcomponents_to_parse:
+            for cpu_id, usage in self.cpu_usages_short.items():
+                row.extend([value for key, value in usage.items()])
+        if 'rolling_usage' in self.subcomponents_to_parse:
+            for cpu_id, usage in self.rolling_usage_rates.items():
+                row.extend([value for key, value in usage.items()])
+        if 'rolling_energy' in self.subcomponents_to_parse:
+            for key, value in self.rolling_energy_rates.items():
+                row.append(value)
+        if 'rolling_usage_short' in self.subcomponents_to_parse:
+            for cpu_id, usage in self.rolling_usage_short_rates.items():
+                row.extend([value for key, value in usage.items()])
+                
+        csv_writer.writerow(row)

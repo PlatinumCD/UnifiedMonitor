@@ -8,3 +8,6 @@ class NetworkComponent(BaseComponent):
     def print_component(self, stream):
         # Implement Network component data printing logic here
         pass
+
+    def record_component(self, csv_writer, time):
+        pass

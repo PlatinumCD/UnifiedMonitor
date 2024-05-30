@@ -33,6 +33,12 @@ def parse_arguments():
     parser.add_argument('--interval', type=float, default=1, help='Interval in seconds between data collections (default is 1 second)')
     parser.add_argument('--period', type=int, default=10, help='The number of updates used to determine the rolling averages (default is 1)')
 
+    # Stream File
+    parser.add_argument('--stream-file', default=None, type=str, help='File name for the performance stream data')
+
+    # Record File
+    parser.add_argument('--record-file', default=None, type=str, help='CSV file name for recording the data of components')
+
     args = parser.parse_args()
 
     cpu_flags = {
@@ -54,10 +60,10 @@ def parse_arguments():
     # Disk and Network flags can be added similarly when their arguments are defined
 
     args_dict = vars(args)
-    if all(not v for k, v in args_dict.items() if k not in ['interval', 'period']):
+    if all(not v for k, v in args_dict.items() if k not in ['interval', 'period', 'stream_file', 'record_file']):
         parser.print_help()
         sys.exit(1)
     
-    ParsedArgs = namedtuple('ParsedArgs', ['cpu_flags', 'mem_flags', 'interval', 'period'])
+    ParsedArgs = namedtuple('ParsedArgs', ['cpu_flags', 'mem_flags', 'interval', 'period', 'stream_file', 'record_file'])
     
-    return ParsedArgs(cpu_flags, mem_flags, args.interval, args.period)
+    return ParsedArgs(cpu_flags, mem_flags, args.interval, args.period, args.stream_file, args.record_file)

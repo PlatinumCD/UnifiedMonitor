@@ -1,3 +1,5 @@
+import time
+
 class SystemManager:
     def __init__(self):
         self.components = []
@@ -12,3 +14,7 @@ class SystemManager:
     def print_components(self, log_stream):
         for component in self.components:
             component.print_component(log_stream)
+
+    def record_components(self, csv_writer):
+        for component in self.components:
+            component.record_component(csv_writer, time.time())

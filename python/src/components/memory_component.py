@@ -31,6 +31,8 @@ class MemoryComponent(BaseComponent):
             if mem_flags['mem_rolling_usage']:
                 self.subcomponents_to_parse.append('rolling_usage')
 
+        self.headers_written = False
+
     def parse_data(self):
         for subcomponent in self.subcomponents_to_parse:
             if subcomponent == 'rolling_usage' and 'usage' not in self.subcomponents_to_parse:
@@ -85,3 +87,23 @@ class MemoryComponent(BaseComponent):
             for key, value in self.rolling_memory_rates.items():
                 formatted_rate = self.format_rate(value)
                 stream.write(f"  {key}: {formatted_rate} kB/s\n")
+
+    def record_component(self, csv_writer, time):
+        if not self.headers_written:
+            # Create headers based on the subcomponents included
+            headers = ['Time']
+            if 'usage' in self.subcomponents_to_parse:
+                headers.extend([f'{key}' for key in self.memory_stats.keys()])
+            if 'rolling_usage' in self.subcomponents_to_parse:
+                headers.extend([f'{key}_rolling_rate' for key in self.rolling_memory_rates.keys()])
+            csv_writer.writerow(headers)
+            self.headers_written = True
+
+        # Add data row for current timestep
+        row = [time]
+        if 'usage' in self.subcomponents_to_parse:
+            row.extend(self.memory_stats.values())
+        if 'rolling_usage' in self.subcomponents_to_parse:
+            row.extend(self.rolling_memory_rates.values())
+
+        csv_writer.writerow(row)

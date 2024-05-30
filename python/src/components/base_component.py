@@ -8,3 +8,7 @@ class BaseComponent(ABC):
     @abstractmethod
     def print_component(self, stream):
         pass
+
+    @abstractmethod
+    def record_component(self, csv_writer):
+        pass

@@ -8,3 +8,7 @@ class DiskComponent(BaseComponent):
     def print_component(self, stream):
         # Implement Disk component data printing logic here
         pass
+
+
+    def record_component(self, csv_writer, time):
+        pass
